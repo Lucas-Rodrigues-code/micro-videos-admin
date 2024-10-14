@@ -15,10 +15,11 @@ export interface IRepository<E extends Entity, EntityId extends ValueObject> {
   getEntity(): new (...args: any[]) => E;
 }
 
-export interface ISearchRepository<
+export interface ISearchableRepository<
   E extends Entity,
   EntityId extends ValueObject,
-  searchInput = SearchParams,
+  Filter = string,
+  searchInput = SearchParams<Filter>,
   searchOutput = SearchResult
 > extends IRepository<E, EntityId> {
   sortableFields: string[];
