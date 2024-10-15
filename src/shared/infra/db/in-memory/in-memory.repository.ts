@@ -1,6 +1,5 @@
 import { Entity } from "../../../domain/entity";
 import { NotFoundError } from "../../../domain/errors/not-found.error";
-import { ValueObject } from "../../../domain/value-object";
 import {
   IRepository,
   ISearchableRepository,
@@ -10,6 +9,7 @@ import {
   SortDirection,
 } from "../../../domain/repository/search-params";
 import { SearchResult } from "../../../domain/repository/search-result";
+import { ValueObject } from "../../../domain/value-object";
 
 export abstract class InMemoryRepository<
   E extends Entity,
@@ -17,25 +17,28 @@ export abstract class InMemoryRepository<
 > implements IRepository<E, EntityId>
 {
   items: E[] = [];
+
   async insert(entity: E): Promise<void> {
     this.items.push(entity);
   }
-  async bulkInsert(entities: E[]): Promise<void> {
+  async bulkInsert(entities: any[]): Promise<void> {
     this.items.push(...entities);
   }
+
   async update(entity: E): Promise<void> {
-    const indexFound = this.items.findIndex((item) => {
-      return item.entity_id.equals(entity.entity_id);
-    });
+    const indexFound = this.items.findIndex((item) =>
+      item.entity_id.equals(entity.entity_id)
+    );
     if (indexFound === -1) {
       throw new NotFoundError(entity.entity_id, this.getEntity());
     }
     this.items[indexFound] = entity;
   }
+
   async delete(entity_id: EntityId): Promise<void> {
-    const indexFound = this.items.findIndex((item) => {
-      return item.entity_id.equals(entity_id);
-    });
+    const indexFound = this.items.findIndex((item) =>
+      item.entity_id.equals(entity_id)
+    );
     if (indexFound === -1) {
       throw new NotFoundError(entity_id, this.getEntity());
     }
@@ -46,6 +49,7 @@ export abstract class InMemoryRepository<
     const item = this.items.find((item) => item.entity_id.equals(entity_id));
     return typeof item === "undefined" ? null : item;
   }
+
   async findAll(): Promise<any[]> {
     return this.items;
   }
@@ -91,8 +95,8 @@ export abstract class InMemorySearchableRepository<
     page: SearchParams["page"],
     per_page: SearchParams["per_page"]
   ) {
-    const start = (page - 1) * per_page;
-    const limit = start + per_page;
+    const start = (page - 1) * per_page; // 0 * 15 = 0
+    const limit = start + per_page; // 0 + 15 = 15
     return items.slice(start, limit);
   }
 
@@ -107,8 +111,10 @@ export abstract class InMemorySearchableRepository<
     }
 
     return [...items].sort((a, b) => {
-      const aValue = custom_getter ? custom_getter(sort, a) : (a as any)[sort];
-      const bValue = custom_getter ? custom_getter(sort, b) : (b as any)[sort];
+      //@ts-ignore
+      const aValue = custom_getter ? custom_getter(sort, a) : a[sort];
+      //@ts-ignore
+      const bValue = custom_getter ? custom_getter(sort, b) : b[sort];
       if (aValue < bValue) {
         return sort_dir === "asc" ? -1 : 1;
       }
