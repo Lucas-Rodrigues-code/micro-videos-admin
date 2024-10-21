@@ -3,6 +3,7 @@ import { EntityValidationError } from "../../shared/domain/validators/validation
 import { ValueObject } from "../../shared/domain/value-object";
 //import ValidatorRules from "../../shared/domain/validators/validator-rules";
 import { Uuid } from "../../shared/domain/value-objects/uuid.vo";
+import { CategoryFakeBuilder } from "./category-fake.builder";
 import { CategoryValidatorFactory } from "./category.validator";
 
 export type CategoryConstructorProps = {
@@ -65,6 +66,10 @@ export class Category extends Entity {
     if (!isValid) {
       throw new EntityValidationError(validator.errors);
     }
+  }
+
+  static fake() {
+    return CategoryFakeBuilder;
   }
 
   get entity_id(): ValueObject {
