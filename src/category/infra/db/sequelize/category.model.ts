@@ -10,12 +10,12 @@ import {
 export class CategoryModel extends Model {
   @PrimaryKey
   @Column({ type: DataType.UUID })
-  declare Category_id: string;
+  declare category_id: string;
 
   @Column({ allowNull: false, type: DataType.STRING(255) })
   declare name: string;
 
-  @Column({ allowNull: false, type: DataType.TEXT })
+  @Column({ allowNull: true, type: DataType.TEXT })
   declare description: string | null;
 
   @Column({ allowNull: false, type: DataType.BOOLEAN })
