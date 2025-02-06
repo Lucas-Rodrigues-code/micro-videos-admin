@@ -13,7 +13,7 @@ import {
 } from "../../domain/category.repository";
 import { CategoryOutput, CategoryOutputMapper } from "./commom/category-output";
 
-export class ListCategoryUseCase
+export class ListCategoriesUseCase
   implements IUseCase<ListCategoryInput, ListCategoryOutput>
 {
   constructor(private readonly categoryRepo: ICategoryRepository) {}
