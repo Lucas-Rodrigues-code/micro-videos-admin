@@ -1,36 +1,97 @@
-import { PaginationOutput, PaginationOutputMapper } from "../../../../../shared/application/pagination-output";
-import { IUseCase } from "../../../../../shared/application/use-case.interface";
-import { SortDirection } from "../../../../../shared/domain/repository/search-params";
-import { CategoryFilter, CategorySearchParams, CategorySearchResult, ICategoryRepository } from "../../../../domain/category.repository";
-import { CategoryOutput, CategoryOutputMapper } from "../../common/category-output";
+import { ListCategoriesUseCase } from '../../list-category.use-case';
+import { setupSequelize } from '../../../../../shared/infra/testing/helpers';
+import { Category } from '../../../../domain/category.entity';
+import { CategorySequelizeRepository } from '../../../../infra/db/sequelize/category-sequelize.repository';
+import { CategoryModel } from '../../../../infra/db/sequelize/category.model';
+import { CategoryOutputMapper } from '../../common/category-output';
 
+describe('ListCategoriesUseCase Integration Tests', () => {
+  let useCase: ListCategoriesUseCase;
+  let repository: CategorySequelizeRepository;
 
-export class ListCategoriesUseCase
-  implements IUseCase<ListCategoriesInput, ListCategoriesOutput>
-{
-  constructor(private categoryRepo: ICategoryRepository) {}
+  setupSequelize({ models: [CategoryModel] });
 
-  async execute(input: ListCategoriesInput): Promise<ListCategoriesOutput> {
-    const params = new CategorySearchParams(input);
-    const searchResult = await this.categoryRepo.search(params);
-    return this.toOutput(searchResult);
-  }
+  beforeEach(() => {
+    repository = new CategorySequelizeRepository(CategoryModel);
+    useCase = new ListCategoriesUseCase(repository);
+  });
 
-  private toOutput(searchResult: CategorySearchResult): ListCategoriesOutput {
-    const { items: _items } = searchResult;
-    const items = _items.map((i) => {
-      return CategoryOutputMapper.toOutput(i);
+  it('should return output sorted by created_at when input param is empty', async () => {
+    const categories = Category.fake()
+      .theCategories(2)
+      .withCreatedAt((i) => new Date(new Date().getTime() + 1000 + i))
+      .build();
+
+    await repository.bulkInsert(categories);
+    const output = await useCase.execute({});
+    expect(output).toEqual({
+      items: [...categories].reverse().map(CategoryOutputMapper.toOutput),
+      total: 2,
+      current_page: 1,
+      per_page: 15,
+      last_page: 1,
     });
-    return PaginationOutputMapper.toOutput(items, searchResult);
-  }
-}
+  });
 
-export type ListCategoriesInput = {
-  page?: number;
-  per_page?: number;
-  sort?: string | null;
-  sort_dir?: SortDirection | null;
-  filter?: CategoryFilter | null;
-};
+  it('should returns output using pagination, sort and filter', async () => {
+    const categories = [
+      new Category({ name: 'a' }),
+      new Category({
+        name: 'AAA',
+      }),
+      new Category({
+        name: 'AaA',
+      }),
+      new Category({
+        name: 'b',
+      }),
+      new Category({
+        name: 'c',
+      }),
+    ];
+    await repository.bulkInsert(categories);
 
-export type ListCategoriesOutput = PaginationOutput<CategoryOutput>;
+    let output = await useCase.execute({
+      page: 1,
+      per_page: 2,
+      sort: 'name',
+      filter: 'a',
+    });
+    expect(output).toEqual({
+      items: [categories[1], categories[2]].map(CategoryOutputMapper.toOutput),
+      total: 3,
+      current_page: 1,
+      per_page: 2,
+      last_page: 2,
+    });
+
+    output = await useCase.execute({
+      page: 2,
+      per_page: 2,
+      sort: 'name',
+      filter: 'a',
+    });
+    expect(output).toEqual({
+      items: [categories[0]].map(CategoryOutputMapper.toOutput),
+      total: 3,
+      current_page: 2,
+      per_page: 2,
+      last_page: 2,
+    });
+
+    output = await useCase.execute({
+      page: 1,
+      per_page: 2,
+      sort: 'name',
+      sort_dir: 'desc',
+      filter: 'a',
+    });
+    expect(output).toEqual({
+      items: [categories[0], categories[2]].map(CategoryOutputMapper.toOutput),
+      total: 3,
+      current_page: 1,
+      per_page: 2,
+      last_page: 2,
+    });
+  });
+});

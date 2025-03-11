@@ -25,7 +25,7 @@ describe("ListCategoriesUseCase Unit Tests", () => {
       total: 1,
       current_page: 1,
       per_page: 2,
-      last_page: 2,
+      last_page: 1,
     });
     const entity = Category.create({ name: "Movie" });
     result = new CategorySearchResult({
@@ -40,7 +40,7 @@ describe("ListCategoriesUseCase Unit Tests", () => {
       total: 1,
       current_page: 1,
       per_page: 2,
-      last_page: 2,
+      last_page: 1,
     });
   });
   it("should return output sorted by created_at when input param is empty", async () => {
@@ -58,7 +58,7 @@ describe("ListCategoriesUseCase Unit Tests", () => {
       total: 2,
       current_page: 1,
       per_page: 15,
-      last_page: 15,
+      last_page: 1,
     });
   });
   it("should return output using pagination, sort and filter", async () => {
