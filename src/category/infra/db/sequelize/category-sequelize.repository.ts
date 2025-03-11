@@ -16,8 +16,8 @@ export class CategorySequelizeRepository implements ICategoryRepository {
   constructor(private categoryModel: typeof CategoryModel) {}
 
   async insert(entity: Category): Promise<void> {
-    const model = CategoryModelMapper.toModel(entity);
-    await this.categoryModel.create(model.toJSON());
+    const modelProps = CategoryModelMapper.toModel(entity);
+    await this.categoryModel.create(modelProps.toJSON());
   }
 
   async bulkInsert(entities: Category[]): Promise<void> {
@@ -33,9 +33,8 @@ export class CategorySequelizeRepository implements ICategoryRepository {
     if (!model) {
       throw new NotFoundError(id, this.getEntity());
     }
-
-    const modelsProps = CategoryModelMapper.toModel(entity);
-    await this.categoryModel.update(modelsProps.toJSON(), {
+    const modelProps = CategoryModelMapper.toModel(entity);
+    await this.categoryModel.update(modelProps.toJSON(), {
       where: { category_id: id },
     });
   }

@@ -1,4 +1,7 @@
-import { ISearchableRepository } from "../../shared/domain/repository/repository-interface";
+import {
+  IRepository,
+  ISearchableRepository,
+} from "../../shared/domain/repository/repository-interface";
 import { SearchParams } from "../../shared/domain/repository/search-params";
 import { SearchResult } from "../../shared/domain/repository/search-result";
 import { Uuid } from "../../shared/domain/value-objects/uuid.vo";

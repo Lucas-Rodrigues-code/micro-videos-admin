@@ -1,18 +1,18 @@
 import { IUseCase } from "../../../shared/application/use-case.interface";
 import { NotFoundError } from "../../../shared/domain/errors/not-found.error";
+import { EntityValidationError } from "../../../shared/domain/validators/validation.error";
 import { Uuid } from "../../../shared/domain/value-objects/uuid.vo";
 import { Category } from "../../domain/category.entity";
 import { ICategoryRepository } from "../../domain/category.repository";
-import { CategoryOutput, CategoryOutputMapper } from "./commom/category-output";
+import { CategoryOutput, CategoryOutputMapper } from "./common/category-output";
 
 export class UpdateCategoryUseCase
   implements IUseCase<UpdateCategoryInput, UpdateCategoryOutput>
 {
-  constructor(private readonly categoryRepo: ICategoryRepository) {}
+  constructor(private categoryRepo: ICategoryRepository) {}
 
   async execute(input: UpdateCategoryInput): Promise<UpdateCategoryOutput> {
     const uuid = new Uuid(input.id);
-
     const category = await this.categoryRepo.findById(uuid);
 
     if (!category) {
@@ -28,8 +28,13 @@ export class UpdateCategoryUseCase
     if (input.is_active === true) {
       category.activate();
     }
+
     if (input.is_active === false) {
       category.deactivate();
+    }
+
+    if (category.notification.hasErrors()) {
+      throw new EntityValidationError(category.notification.toJSON());
     }
 
     await this.categoryRepo.update(category);
@@ -41,7 +46,7 @@ export class UpdateCategoryUseCase
 export type UpdateCategoryInput = {
   id: string;
   name?: string;
-  description?: string | null;
+  description?: string;
   is_active?: boolean;
 };
 

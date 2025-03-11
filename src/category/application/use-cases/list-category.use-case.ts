@@ -4,27 +4,26 @@ import {
 } from "../../../shared/application/pagination-output";
 import { IUseCase } from "../../../shared/application/use-case.interface";
 import { SortDirection } from "../../../shared/domain/repository/search-params";
-import { Category } from "../../domain/category.entity";
 import {
   CategoryFilter,
   CategorySearchParams,
   CategorySearchResult,
   ICategoryRepository,
 } from "../../domain/category.repository";
-import { CategoryOutput, CategoryOutputMapper } from "./commom/category-output";
+import { CategoryOutput, CategoryOutputMapper } from "./common/category-output";
 
 export class ListCategoriesUseCase
-  implements IUseCase<ListCategoryInput, ListCategoryOutput>
+  implements IUseCase<ListCategoriesInput, ListCategoriesOutput>
 {
-  constructor(private readonly categoryRepo: ICategoryRepository) {}
+  constructor(private categoryRepo: ICategoryRepository) {}
 
-  async execute(input: ListCategoryInput): Promise<ListCategoryOutput> {
+  async execute(input: ListCategoriesInput): Promise<ListCategoriesOutput> {
     const params = new CategorySearchParams(input);
     const searchResult = await this.categoryRepo.search(params);
     return this.toOutput(searchResult);
   }
 
-  private toOutput(searchResult: CategorySearchResult): ListCategoryOutput {
+  private toOutput(searchResult: CategorySearchResult): ListCategoriesOutput {
     const { items: _items } = searchResult;
     const items = _items.map((i) => {
       return CategoryOutputMapper.toOutput(i);
@@ -33,7 +32,7 @@ export class ListCategoriesUseCase
   }
 }
 
-export type ListCategoryInput = {
+export type ListCategoriesInput = {
   page?: number;
   per_page?: number;
   sort?: string | null;
@@ -41,4 +40,4 @@ export type ListCategoryInput = {
   filter?: CategoryFilter | null;
 };
 
-export type ListCategoryOutput = PaginationOutput<CategoryOutput>;
+export type ListCategoriesOutput = PaginationOutput<CategoryOutput>;

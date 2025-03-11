@@ -3,12 +3,12 @@ import { NotFoundError } from "../../../shared/domain/errors/not-found.error";
 import { Uuid } from "../../../shared/domain/value-objects/uuid.vo";
 import { Category } from "../../domain/category.entity";
 import { ICategoryRepository } from "../../domain/category.repository";
-import { CategoryOutput, CategoryOutputMapper } from "./commom/category-output";
+import { CategoryOutput, CategoryOutputMapper } from "./common/category-output";
 
 export class GetCategoryUseCase
   implements IUseCase<GetCategoryInput, GetCategoryOutput>
 {
-  constructor(private readonly categoryRepo: ICategoryRepository) {}
+  constructor(private categoryRepo: ICategoryRepository) {}
 
   async execute(input: GetCategoryInput): Promise<GetCategoryOutput> {
     const uuid = new Uuid(input.id);
@@ -16,6 +16,7 @@ export class GetCategoryUseCase
     if (!category) {
       throw new NotFoundError(input.id, Category);
     }
+
     return CategoryOutputMapper.toOutput(category);
   }
 }

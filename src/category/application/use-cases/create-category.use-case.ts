@@ -1,7 +1,8 @@
 import { IUseCase } from "../../../shared/application/use-case.interface";
+import { EntityValidationError } from "../../../shared/domain/validators/validation.error";
 import { Category } from "../../domain/category.entity";
 import { ICategoryRepository } from "../../domain/category.repository";
-import { CategoryOutput, CategoryOutputMapper } from "./commom/category-output";
+import { CategoryOutput, CategoryOutputMapper } from "./common/category-output";
 
 export class CreateCategoryUseCase
   implements IUseCase<CreateCategoryInput, CreateCategoryOutput>
@@ -10,6 +11,10 @@ export class CreateCategoryUseCase
 
   async execute(input: CreateCategoryInput): Promise<CreateCategoryOutput> {
     const entity = Category.create(input);
+
+    if (entity.notification.hasErrors()) {
+      throw new EntityValidationError(entity.notification.toJSON());
+    }
 
     await this.categoryRepo.insert(entity);
 
